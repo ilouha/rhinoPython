@@ -40,7 +40,7 @@ def add_area_text():
     
     # Add text to the document
     rs.AddText(area_text, text_point, height=text_height)
-    print(f"Added text: {area_text} at point: {text_point}")
+ 
 
 # Run the function
 if __name__ == "__main__":
