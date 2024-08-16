@@ -30,13 +30,23 @@ def is_rectangle(curve):
         return True
     return False
 
-def offset_line(p1, p2, distance):
+def offset_line(p1, p2, distance, layer_name):
     vector = rs.VectorCreate(p2, p1)
     vector = rs.VectorUnitize(vector)
     perp_vector = rs.VectorRotate(vector, 90, [0, 0, 1])
     offset_p1 = rs.PointAdd(p1, rs.VectorScale(perp_vector, distance))
     offset_p2 = rs.PointAdd(p2, rs.VectorScale(perp_vector, distance))
-    return rs.AddLine(offset_p1, offset_p2)
+    line = rs.AddLine(offset_p1, offset_p2)
+    if line:
+        rs.ObjectLayer(line, layer_name)
+    return line
+
+def ensure_layer_exists(layer_name):
+    if not rs.IsLayer(layer_name):
+        rs.AddLayer(layer_name)
+    if rs.IsLayer(layer_name):
+        return True
+    return False
 
 def offset_rectangle_edges():
     # Select a rectangle curve
@@ -58,36 +68,41 @@ def offset_rectangle_edges():
         rs.MessageBox("Invalid input for offset distances.")
         return
 
+    # Ensure the layer '01_Setbacks' exists
+    layer_name = '01_Setbacks'
+    if not ensure_layer_exists(layer_name):
+        rs.MessageBox("Layer '01_Setbacks' could not be created.")
+        return
+    
     # Get the rectangle corners
     corners = rs.PolylineVertices(rectangle)
     if len(corners) != 5:
         rs.MessageBox("The selected curve is not a valid rectangle.")
         return
 
-    # Determine the shortest edge
-    edge_lengths = [(corners[i], corners[i+1], rs.Distance(corners[i], corners[i+1])) for i in range(4)]
-    shortest_edge = min(edge_lengths, key=lambda x: x[2])
-    shortest_edge_index = edge_lengths.index(shortest_edge)
-
-    # Determine opposite edge and long edges
-    opposite_edge_index = (shortest_edge_index + 2) % 4
-    long_edges_indices = [(shortest_edge_index + 1) % 4, (shortest_edge_index + 3) % 4]
+    # Determine the shortest and longest edges
+    edges = [(corners[i], corners[i+1], rs.Distance(corners[i], corners[i+1])) for i in range(4)]
+    edges.sort(key=lambda edge: edge[2])
+    shortest_edge = edges[0]
+    opposite_short_edge = edges[1]
+    long_edge1 = edges[2]
+    long_edge2 = edges[3]
 
     # Offset the shortest edge by x_offset
-    offset_line(shortest_edge[0], shortest_edge[1], x_offset)
+    if not offset_line(shortest_edge[0], shortest_edge[1], x_offset, layer_name):
+        rs.MessageBox("Failed to offset the shortest edge.")
 
-    # Offset the opposite edge by y_offset
-    opposite_edge = edge_lengths[opposite_edge_index]
-    offset_line(opposite_edge[0], opposite_edge[1], y_offset)
+    # Offset the opposite short edge by y_offset
+    if not offset_line(opposite_short_edge[0], opposite_short_edge[1], y_offset, layer_name):
+        rs.MessageBox("Failed to offset the opposite short edge.")
 
     # Offset the long edges by z_offset
-    long_edge1 = edge_lengths[long_edges_indices[0]]
-    long_edge2 = edge_lengths[long_edges_indices[1]]
-    
-    offset_line(long_edge1[0], long_edge1[1], z_offset)
-    offset_line(long_edge2[0], long_edge2[1], z_offset)
+    if not offset_line(long_edge1[0], long_edge1[1], z_offset, layer_name):
+        rs.MessageBox("Failed to offset the first long edge.")
+    if not offset_line(long_edge2[0], long_edge2[1], z_offset, layer_name):
+        rs.MessageBox("Failed to offset the second long edge.")
 
-    rs.MessageBox("Successfully offset the rectangle edges.")
+    rs.MessageBox("Successfully offset the rectangle edges and placed them on the '01_Setbacks' layer.")
 
 if __name__ == "__main__":
     offset_rectangle_edges()
