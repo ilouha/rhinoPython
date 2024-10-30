@@ -13,6 +13,7 @@ def rename_and_group_layers():
         'A-DOOR-FRAM': ('Architectural', 'Door Frame'),
         'A-DOOR': ('Architectural', 'Door'),
         'A-DOOR-GLAZ': ('Architectural', 'Door Glazing'),
+        'A-FLOR-HRAL': ('Architectural', 'Floor Handrail'),
         'A-ROOF': ('Architectural', 'Roof'),
         'A-GLAZ': ('Architectural', 'Glazing'),
         'Q-SPCQ': ('Equipment', 'Specialty Casework'),
@@ -30,9 +31,16 @@ def rename_and_group_layers():
         'A-GENM': ('Architectural', 'General'),
         'A-ROOF-OTLN': ('Architectural', 'Roof Outline'),
         'G-ANNO-SYMB': ('General', 'Annotations and Symbols'),
-        '0': ('Default', 'Default Layer')
+        '0': ('Default', 'Default Layer'),
+        # Newly added layers
+        'A-FLOR-LEVL': ('Architectural', 'Floor Level'),
+        'A-DOOR-HDLN': ('Architectural', 'Door Headline'),
+        'A-GLAZ-CURT': ('Architectural', 'Curtain Glazing'),
+        'A-GLAZ-CWMG': ('Architectural', 'CW Metal Glazing'),
+        'S-COLS': ('Structural', 'Columns'),
+        'S-BEAM': ('Structural', 'Beams')
     }
-    
+        
     # Helper function to update layer names inside blocks
     def update_block_layers(block_name):
         # Explode the block to modify its contents
